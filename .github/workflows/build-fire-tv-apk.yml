@@ -17,7 +17,7 @@ jobs:
       - name: Unpack Android project
         run: |
           rm -rf extracted
-          unzip -q RooseveltFundraiserDisplay-project.zip -d extracted
+          unzip -q RooseveltFundraiserDisplay-project-v2.zip -d extracted
           cp -R extracted/RooseveltFundraiserDisplay/. .
       - name: Set up Java 17
         uses: actions/setup-java@v4
