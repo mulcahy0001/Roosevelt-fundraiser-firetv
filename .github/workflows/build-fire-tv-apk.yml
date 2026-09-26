@@ -1,0 +1,47 @@
+name: Build Roosevelt Fire TV APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Unpack Android project
+        run: |
+          rm -rf extracted
+          unzip -q RooseveltFundraiserDisplay-project.zip -d extracted
+          cp -R extracted/RooseveltFundraiserDisplay/. .
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Prepare named APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk RooseveltFundraiserDisplay.apk
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roosevelt-Fundraiser-Fire-TV
+          path: RooseveltFundraiserDisplay.apk
+      - name: Publish latest APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete firetv-latest --cleanup-tag --yes || true
+          gh release create firetv-latest RooseveltFundraiserDisplay.apk --title "Roosevelt Fundraiser Display for Fire TV" --notes "Install RooseveltFundraiserDisplay.apk on an Android-based Fire TV device." --latest
